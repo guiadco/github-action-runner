@@ -1,18 +1,21 @@
 FROM summerwind/actions-runner:latest
-ENV PATH "$PATH:/opt/google-cloud-sdk/bin/:/opt/google-cloud-sdk/completion.bash.inc:/opt/google-cloud-sdk/path.bash.inc"
-USER root
+ENV PATH "$PATH:~/google-cloud-sdk/bin/:~/google-cloud-sdk/completion.bash.inc:~/google-cloud-sdk/path.bash.inc"
 
 # Install glcoud command
-RUN cd /opt && \
+RUN cd ~ && \
     curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-350.0.0-linux-x86_64.tar.gz && \
     tar -xvzf google-cloud-sdk-350.0.0-linux-x86_64.tar.gz && \
-    ./google-cloud-sdk/install.sh -q && \
-    chown -R runner:runner /home/runner
+    ./google-cloud-sdk/install.sh -q
 
 # Install gettext for envsubst and awscli
-RUN apt-get update -y \
-  && apt-get -y install gettext awscli
+RUN sudo apt-get update -y \
+  && sudo apt-get -y install gettext awscli
 
-RUN rm -rf /var/lib/apt/lists/*
+# Install terraform
+RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
+    sudo apt-add-repository "deb [arch=$(dpkg --print-architecture)] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
+    sudo apt-get -y install terraform
 
-USER runner
+
+RUN sudo rm -rf /var/lib/apt/lists/* && \
+    rm ~/google-cloud-sdk-350.0.0-linux-x86_64.tar.gz
