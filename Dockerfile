@@ -1,15 +1,18 @@
 FROM summerwind/actions-runner:latest
+ENV PATH "$PATH:/opt/google-cloud-sdk/bin/:/opt/google-cloud-sdk/completion.bash.inc:/opt/google-cloud-sdk/path.bash.inc"
+USER root
 
-RUN sudo apt-get update -y \
-  && sudo apt-get -y install gettext awscli
-
-ENV PATH "$PATH:/opt/google-cloud-sdk/bin/"
-
-RUN cd /tmp && \
+# Install glcoud command
+RUN cd /opt && \
     curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-350.0.0-linux-x86_64.tar.gz && \
     tar -xvzf google-cloud-sdk-350.0.0-linux-x86_64.tar.gz && \
     ./google-cloud-sdk/install.sh -q && \
-    sudo apt-get update -qqy && \
-    sudo apt-get install -qqy google-cloud-sdk
+    chown -R runner:runner /home/runner
 
-RUN sudo rm -rf /var/lib/apt/lists/*
+# Install gettext for envsubst and awscli
+RUN apt-get update -y \
+  && apt-get -y install gettext awscli
+
+RUN rm -rf /var/lib/apt/lists/*
+
+USER runner
